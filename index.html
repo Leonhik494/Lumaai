@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Luma — ваш ИИ-спутник</title>
+  <style>
+    :root {
+      --bg: #0d0d1a;
+      --card: #18182a;
+      --text: #e8e8ff;
+      --user: #2d1b5e;
+      --bot: #142e4d;
+      --accent: #5d4ae2;
+      --accent-light: #9a8cff;
+      --future: #4ecdc4;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, var(--bg), #16162e);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+    .container {
+      max-width: 800px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    header {
+      text-align: center;
+      padding: 22px 0 14px;
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .logo {
+      width: 56px;
+      height: 56px;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: 2.3rem;
+      font-weight: 800;
+      background: linear-gradient(to right, var(--accent-light), #c2a9ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .future-notice {
+      background: rgba(78, 205, 196, 0.08);
+      border: 1px solid var(--future);
+      border-radius: 12px;
+      padding: 12px;
+      margin: 16px 0;
+      font-size: 0.92rem;
+      color: #e0f7f9;
+    }
+    .counter {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-top: 8px;
+    }
+    .chat {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+      padding: 16px;
+      margin-bottom: 16px;
+      background: rgba(24, 24, 42, 0.6);
+      border-radius: 22px;
+    }
+    .message {
+      padding: 16px 20px;
+      border-radius: 20px;
+      max-width: 85%;
+      line-height: 1.55;
+      word-wrap: break-word;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.25);
+    }
+    .user {
+      background: linear-gradient(135deg, var(--user), #4a2a85);
+      align-self: flex-end;
+      border-bottom-right-radius: 6px;
+    }
+    .bot {
+      background: linear-gradient(135deg, var(--bot), #2a4a7f);
+      align-self: flex-start;
+      border-bottom-left-radius: 6px;
+    }
+    .input-area {
+      display: flex;
+      gap: 12px;
+      padding: 8px 0;
+    }
+    #user-input {
+      flex: 1;
+      padding: 16px 20px;
+      border: none;
+      border-radius: 28px;
+      background: rgba(25,25,45,0.85);
+      color: white;
+      outline: none;
+      caret-color: var(--accent-light);
+      border: 1px solid rgba(93,74,226,0.35);
+    }
+    #send-btn {
+      background: linear-gradient(135deg, var(--accent), #7a66ff);
+      color: white;
+      border: none;
+      width: 56px;
+      border-radius: 28px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 1.25rem;
+    }
+    #send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .loading {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid transparent;
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (max-width: 600px) {
+      .logo { width: 48px; height: 48px; }
+      h1 { font-size: 2.0rem; }
+      .message { max-width: 92%; font-size: 0.95rem; padding: 14px 16px; }
+      .input-area { flex-direction: column; }
+      #send-btn { width: auto; padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#9a8cff;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#5d4ae2;stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        <path d="M25 20 L25 80 L75 80" stroke="url(#grad)" stroke-width="8" stroke-linecap="round" fill="none" />
+        <circle cx="60" cy="40" r="12" fill="none" stroke="url(#grad)" stroke-width="2" opacity="0.7">
+          <animate attributeName="r" values="8;16;8" dur="3s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0.7;0.2;0.7" dur="3s" repeatCount="indefinite" />
+        </circle>
+      </svg>
+      <h1>Luma</h1>
+      
+      <!-- Уведомление о полной версии остаётся в шапке -->
+      <div class="future-notice">
+        🔜 Скоро: подписки и безлимитный доступ в полной версии! Следите за обновлениями.
+      </div>
+      
+      <div class="counter" id="counter">Осталось: 10 запросов сегодня</div>
+    </header>
+
+    <div class="chat" id="chat"></div>
+
+    <div class="input-area">
+      <input type="text" id="user-input" placeholder="Напишите сообщение..." autocomplete="off" />
+      <button id="send-btn">➤</button>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://functions.yandexcloud.net/d4enjbj00o3fem36gq7n";
+    const DAILY_LIMIT = 10;
+
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('user-input');
+    const button = document.getElementById('send-btn');
+    const counterEl = document.getElementById('counter');
+
+    function initCounter() {
+      const today = new Date().toISOString().split('T')[0];
+      let data = JSON.parse(localStorage.getItem('luma_usage') || '{}');
+      
+      if (data.day !== today) {
+        data = { day: today, count: 0 };
+        localStorage.setItem('luma_usage', JSON.stringify(data));
+      }
+      
+      updateCounter(data.count);
+      return data.count;
+    }
+
+    function updateCounter(count) {
+      const left = Math.max(0, DAILY_LIMIT - count);
+      counterEl.textContent = `Осталось: ${left} запросов сегодня`;
+      button.disabled = (left <= 0);
+      if (left <= 0) {
+        counterEl.textContent = "Лимит исчерпан. Попробуйте завтра.";
+      }
+    }
+
+    function addMessage(text, sender) {
+      const msg = document.createElement('div');
+      msg.classList.add('message', sender);
+      msg.textContent = text;
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    // ✅ Приветствие БЕЗ упоминания полной версии
+    addMessage("Привет! У вас есть 10 бесплатных запросов в день. Спасибо, что пользуетесь Luma!", "bot");
+
+    let requestCount = initCounter();
+
+    async function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+
+      if (requestCount >= DAILY_LIMIT) {
+        alert("Лимит исчерпан. Попробуйте завтра.");
+        return;
+      }
+
+      addMessage(text, "user");
+      input.value = "";
+      button.disabled = true;
+
+      const loadingEl = document.createElement('div');
+      loadingEl.classList.add('message', 'bot');
+      loadingEl.innerHTML = '<div class="loading"></div> Думаю...';
+      chat.appendChild(loadingEl);
+      chat.scrollTop = chat.scrollHeight;
+
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: text })
+        });
+
+        const data = await response.json();
+        chat.removeChild(loadingEl);
+
+        if (data.error) {
+          addMessage(`⚠️ ${data.error}`, "bot");
+        } else {
+          const answer = data.choices?.[0]?.message?.content || "Понял.";
+          addMessage(answer, "bot");
+          
+          requestCount++;
+          localStorage.setItem('luma_usage', JSON.stringify({
+            day: new Date().toISOString().split('T')[0],
+            count: requestCount
+          }));
+          updateCounter(requestCount);
+        }
+      } catch (error) {
+        chat.removeChild(loadingEl);
+        addMessage("❌ Ошибка подключения.", "bot");
+        console.error("Ошибка:", error);
+      }
+
+      button.disabled = (requestCount >= DAILY_LIMIT);
+      input.focus();
+    }
+
+    button.addEventListener("click", sendMessage);
+    input.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendMessage();
+    });
+
+    input.focus();
+  </script>
+</body>
+</html>
