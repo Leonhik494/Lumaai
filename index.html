@@ -14,6 +14,7 @@
       --accent: #5d4ae2;
       --accent-light: #9a8cff;
       --future: #4ecdc4;
+      --mode-active: #4a2a85;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -62,6 +63,29 @@
       margin: 16px 0;
       font-size: 0.92rem;
       color: #e0f7f9;
+    }
+    .mode-switch {
+      display: flex;
+      gap: 10px;
+      margin: 14px 0;
+      width: 100%;
+      max-width: 400px;
+    }
+    .mode-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 12px;
+      background: rgba(45, 27, 94, 0.4);
+      color: #c5b3e6;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .mode-btn.active {
+      background: var(--mode-active);
+      color: white;
+      box-shadow: 0 4px 10px rgba(74, 42, 133, 0.5);
     }
     .counter {
       font-size: 0.9rem;
@@ -143,6 +167,7 @@
       .message { max-width: 92%; font-size: 0.95rem; padding: 14px 16px; }
       .input-area { flex-direction: column; }
       #send-btn { width: auto; padding: 16px; }
+      .mode-switch { flex-direction: column; }
     }
   </style>
 </head>
@@ -164,9 +189,14 @@
       </svg>
       <h1>Luma</h1>
       
-      <!-- Уведомление о полной версии остаётся в шапке -->
       <div class="future-notice">
         🔜 Скоро: подписки и безлимитный доступ в полной версии! Следите за обновлениями.
+      </div>
+
+      <!-- Переключатели режимов -->
+      <div class="mode-switch">
+        <button id="mode-chat" class="mode-btn active">💬 Чат</button>
+        <button id="mode-code" class="mode-btn">💻 Код</button>
       </div>
       
       <div class="counter" id="counter">Осталось: 10 запросов сегодня</div>
@@ -188,16 +218,33 @@
     const input = document.getElementById('user-input');
     const button = document.getElementById('send-btn');
     const counterEl = document.getElementById('counter');
+    const modeChatBtn = document.getElementById('mode-chat');
+    const modeCodeBtn = document.getElementById('mode-code');
 
+    // Режим по умолчанию
+    let currentMode = 'chat';
+
+    // Обработчики переключения режима
+    modeChatBtn.addEventListener('click', () => {
+      currentMode = 'chat';
+      modeChatBtn.classList.add('active');
+      modeCodeBtn.classList.remove('active');
+    });
+
+    modeCodeBtn.addEventListener('click', () => {
+      currentMode = 'code';
+      modeCodeBtn.classList.add('active');
+      modeChatBtn.classList.remove('active');
+    });
+
+    // Инициализация счётчика
     function initCounter() {
       const today = new Date().toISOString().split('T')[0];
       let data = JSON.parse(localStorage.getItem('luma_usage') || '{}');
-      
       if (data.day !== today) {
         data = { day: today, count: 0 };
         localStorage.setItem('luma_usage', JSON.stringify(data));
       }
-      
       updateCounter(data.count);
       return data.count;
     }
@@ -219,7 +266,6 @@
       chat.scrollTop = chat.scrollHeight;
     }
 
-    // ✅ Приветствие БЕЗ упоминания полной версии
     addMessage("Привет! У вас есть 10 бесплатных запросов в день. Спасибо, что пользуетесь Luma!", "bot");
 
     let requestCount = initCounter();
@@ -244,10 +290,11 @@
       chat.scrollTop = chat.scrollHeight;
 
       try {
+        // Отправляем режим на сервер
         const response = await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: text })
+          body: JSON.stringify({ prompt: text, mode: currentMode })
         });
 
         const data = await response.json();
